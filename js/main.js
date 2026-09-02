@@ -55,4 +55,9 @@ document.addEventListener('keydown', (e) => {
   if (source === 'sample' && cfg.sheetUrl) st.textContent = `couldn't read the sheet (${error?.message || 'error'}) — showing the sample issue`;
   else if (source === 'stale') st.textContent = 'sheet unreachable — showing the last saved issue';
   else st.textContent = '';
-  // Refresh quietly when the ca
+  // Refresh quietly when the cache expires while the tab stays open.
+  setInterval(async () => {
+    const r = await loadIssues(cfg);
+    if (r.source === 'sheet' && JSON.stringify(r.issues) !== JSON.stringify(issues)) { issues = r.issues; show(0); }
+  }, cfg.cacheMs + 1000);
+})();

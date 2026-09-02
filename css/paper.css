@@ -263,4 +263,7 @@ body {
   .object-caption { left: 50%; top: calc(50% + 46vw); transform: translateX(-50%) translateZ(8px); text-align: center; }
   .hint { bottom: 14px; gap: 14px; font-size: 11px; }
 }
-@media (pr
+@media (prefers-reduced-motion: reduce) {
+  :root { --unfold: 1ms; --open: 1ms; }
+  .hint-text { animation: none; }
+}

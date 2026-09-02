@@ -39,4 +39,65 @@ Columns are matched by **keyword in the header**, case-insensitive, so the exact
 | `Letters headline` / `Letters` | page 2, 2 columns (headline defaults to "Letters to the Editor") |
 | `Courts` | page 2, "The Week in the Courts", 2 columns |
 | `Arts headline` / `Arts` | page 3 review |
-| `Arts image` (URL) / `Arts caption` | review ph
+| `Arts image` (URL) / `Arts caption` | review photo |
+| `Weather`, `Shipping` | page 3 boxes |
+| `Classifieds` | up to 4 ads, one per line or separated by `;` |
+| `Object URL` | the `.glb` that falls out (optional — blank = nothing falls out that week) |
+| `Object caption` | monospace label next to the resting object, e.g. "this week: a rose I printed" |
+| `Object scale` | number, default 1 |
+| `Object drop` | `tumble` (default) · `roll` · `flutter` · `splat` |
+| `Object PNG` | optional `.png` used when WebGL is unavailable or the `.glb` fails |
+
+Empty cell → that slot renders blank (photos collapse so text takes the width).
+
+**URLs.** Any public URL works. Google Drive share links are auto-converted (`drive.google.com/file/d/ID` → `lh3.googleusercontent.com/d/ID`; the file itself must be link-shared). A bare filename in an object column (`2026-09-01.glb`) resolves to this repo's `objects/` folder. Google Form's built-in file upload stores files privately, so paste links instead.
+
+## The paper
+
+One sheet, printed both sides, in CSS 3D. Left half `h1` = front page outside / page 2 inside; right half `h2` = back page outside / page 3 inside. Each half is split into top and bottom quadrants so the horizontal fold can cut through the layout.
+
+| Stage | What you see | Transition |
+|---|---|---|
+| 0 | Quarter-folded: front-page top | — |
+| 1 | Full front page | bottom quadrants swing up from behind (`unfoldSpeed`, 900 ms) |
+| 2 | Inside spread, pages 2–3 | left leaf swings open on the spine (`openSpeed`, 1100 ms); **object spawns at 40 %** of the swing |
+| → 0 | Refold | spine closes first, then the mid fold; the object slides off the desk |
+
+Mouse moves tilt the whole desk (paper, shadow and object share one parent). Newsprint images get grayscale + contrast + slight sepia + a rotated halftone dot overlay, all CSS, so remote images need no CORS. Keyboard: Enter/Space fold, ←/→ older/newer issue. Mobile: paper scales to ~85 vw, no tilt, tap to unfold.
+
+## The drop
+
+[`js/drop.js`](js/drop.js): one transparent three.js canvas over the desk, camera looking down at the desk (fov 30°), one soft key light + hemisphere, contact shadow via a `ShadowMaterial` ground plane. The `.glb` loads when the issue is shown, not on click, so the drop is instant. Presets are keyframed easing with a little randomness (no physics engine):
+
+- **tumble** — falls with gravity ease, 1.5 turns, two damped bounces, settles slightly rotated (1.4 s)
+- **roll** — falls, one bounce, rolls along the desk with rotation matched to distance, decelerates
+- **flutter** — slow fall with lateral sway, lands flat (2.7 s)
+- **splat** — no 3D: a flat coffee-stain decal fades/scales in under the paper edge (0.6 s)
+
+Rest position: in front of the paper, lower-right of the desk. Caption fades in 300 ms after it settles. Hover → slow spin. Fallback without WebGL: the `Object PNG` with the tumble keyframes in CSS.
+
+## Files
+
+```
+index.html            page + the four page templates
+css/paper.css         fold geometry, newsprint typography, halftone, drop fallbacks
+js/config.js          sheetUrl, masthead, timings, default object
+js/sheet.js           gviz fetch, header→field matching, Drive URL conversion, cache
+js/render.js          issue → four pages (each rendered twice, clipped per quadrant)
+js/fold.js            stage machine + desk tilt
+js/drop.js            three.js drop
+js/sample-issue.js    fallback content
+objects/              .glb files (one per week)
+setup/create-form.gs  builds the Google Form + Sheet
+tools/make-glb.mjs    generates the sample mug .glb without any 3D software
+```
+
+## Local preview
+
+```bash
+python3 -m http.server 8765
+```
+
+then open http://localhost:8765. (The `.glb` and the ES-module imports need http, not `file://`.)
+
+See [PLAN.md](PLAN.md) for the original brief.

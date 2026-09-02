@@ -53,7 +53,8 @@ export class Drop {
   // 1 world unit = 100 CSS px on the desk plane. Camera tilted ~20° off vertical so a fall reads as "down".
   resize() {
     if (!this.webgl) return;
-    const r = this.layer.getBoundingClientRect(); const w = Math.max(1, r.width), h = Math.max(1, r.height);
+    const r = this.layer.getBoundingClientRect(); const w = r.width, h = r.height;
+    if (w < 50 || h < 50) { requestAnimationFrame(() => this.resize()); return; } // layout not ready yet
     this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     const dist = (h / 200) / Math.tan(THREE.MathUtils.degToRad(15));
     this.camera.position.set(0, dist * Math.cos(0.35), dist * Math.sin(0.35)); this.camera.lookAt(0, 0, 0);
@@ -89,7 +90,7 @@ export class Drop {
   async drop() {
     if (!this.spec) return;
     const kind = await this.ready; if (!kind) return;
-    this.stop();
+    this.stop(); this.resize(); // desk size may have changed since load
     const { w, h } = this.desk || { w: 10, h: 7 };
     const preset = this.spec.drop || 'tumble';
     // spawn at the spine at the mid-fold line, "tucked in the fold"; rest lower-right in front of the paper
