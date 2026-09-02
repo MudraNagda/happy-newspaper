@@ -1,0 +1,266 @@
+/* ===== The Happy Newspaper — folded broadsheet in CSS 3D ===================
+   Geometry: one sheet 800×540 = two halves (h1 left, h2 right) × two quadrants (top, bottom).
+   Stage 0: h1 folded onto h2 (spine), bottom quadrants folded behind (mid fold) → front-page top shows.
+   Stage 1: bottom quadrants unfold → full front page.  Stage 2: h1 swings open → inside spread.
+   ========================================================================== */
+:root {
+  --pw: 400px;          /* page width  */
+  --ph: 540px;          /* page height */
+  --qh: 270px;          /* quadrant height = ph/2 */
+  --paper: #f3ecdc;
+  --paper-2: #e9e0cc;
+  --ink: #1b1a17;
+  --ink-soft: #3a3833;
+  --rule: #6d6a62;
+  --desk: #2b2622;
+  --unfold: 900ms;
+  --open: 1100ms;
+  --ease-fold: cubic-bezier(.62, 0, .3, 1);
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif: "Old Standard TT", "Times New Roman", Georgia, serif;
+  --display: "Playfair Display", "Old Standard TT", Georgia, serif;
+  --black: "UnifrakturCook", "Old English Text MT", "Playfair Display", serif;
+  --scale: 1;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--desk);
+  color: #d9d2c4;
+  font-family: var(--mono);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Desk -------------------------------------------------------------- */
+.desk {
+  position: relative; width: 100vw; height: 100vh; overflow: hidden;
+  perspective: 1800px; perspective-origin: 50% 45%;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, rgba(255, 232, 200, .10), transparent 70%),
+    radial-gradient(ellipse 120% 100% at 50% 100%, rgba(0, 0, 0, .55), transparent 60%),
+    repeating-linear-gradient(97deg, rgba(255,255,255,.012) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(94deg, rgba(0,0,0,.05) 0 1px, transparent 1px 13px),
+    linear-gradient(180deg, #33302b, #211d1a);
+}
+.desk::after { /* vignette */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 55%, rgba(0,0,0,.55));
+}
+.tilt {
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  transition: transform 80ms linear; will-change: transform;
+  z-index: 1;
+}
+
+/* ---- Paper shadow ------------------------------------------------------- */
+.paper-shadow {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--pw); height: var(--qh);
+  transform: translate(-50%, -50%) translateZ(-2px) scale(var(--scale));
+  background: rgba(0,0,0,.55); filter: blur(22px); border-radius: 12px;
+  transition: width var(--unfold) var(--ease-fold), height var(--unfold) var(--ease-fold);
+}
+.paper-shadow[data-stage="1"] { height: var(--ph); }
+.paper-shadow[data-stage="2"] { width: calc(var(--pw) * 2); height: var(--ph); transition-duration: var(--open); }
+
+/* ---- Paper ---------------------------------------------------------------- */
+.paper {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(var(--pw) * 2); height: var(--ph);
+  margin: calc(var(--ph) / -2) 0 0 calc(var(--pw) * -1);
+  transform-style: preserve-3d; cursor: pointer; outline: none;
+  transition: transform var(--unfold) var(--ease-fold);
+  /* stage 0: centre the visible top-right quadrant */
+  transform: scale(var(--scale)) translate(calc(var(--pw) / -2), calc(var(--qh) / 2));
+}
+.paper.stage-1 { transform: scale(var(--scale)) translate(calc(var(--pw) / -2), 0); }
+.paper.stage-2 { transform: scale(var(--scale)) translate(0, 0); transition-duration: var(--open); }
+.paper.stage-0.closing { transition-duration: calc(var(--open) + var(--unfold)); }
+.paper:focus-visible .h2 .quad.top .face.back,
+.paper:focus-visible { filter: drop-shadow(0 0 0 transparent); }
+
+.half {
+  position: absolute; top: 0; width: var(--pw); height: var(--ph);
+  transform-style: preserve-3d;
+}
+.h2 { left: var(--pw); }
+.h1 {
+  left: 0; transform-origin: 100% 50%;
+  transition: transform var(--open) var(--ease-fold);
+  transform: rotateY(180deg) translateZ(-3px);      /* folded onto h2 (stage 0/1) */
+}
+.paper.stage-2 .h1 { transform: rotateY(0deg) translateZ(0px); }
+
+.quad {
+  position: absolute; left: 0; width: var(--pw); height: var(--qh);
+  transform-style: preserve-3d;
+}
+.quad.top { top: 0; }
+.quad.bottom {
+  top: var(--qh); transform-origin: 50% 0%;
+  transition: transform var(--unfold) var(--ease-fold);
+}
+/* folded behind (stage 0). h1 is Y-flipped, so its sign and depth differ (lands at the very back). */
+.h2 .quad.bottom { transform: rotateX(-180deg) translateZ(3px); }
+.h1 .quad.bottom { transform: rotateX(180deg) translateZ(-9px); }
+.paper.stage-1 .quad.bottom, .paper.stage-2 .quad.bottom { transform: rotateX(0deg) translateZ(0px); }
+/* closing 2→0: spine first, then the mid fold */
+.paper.closing .quad.bottom { transition-delay: var(--open); }
+.paper.closing { transition-delay: 0ms; }
+
+.face {
+  position: absolute; inset: 0; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.018) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.35), transparent 60%),
+    linear-gradient(180deg, var(--paper), var(--paper-2));
+  color: var(--ink);
+}
+.face.front { transform: translateZ(1px); }
+.face.back  { transform: rotateY(180deg) translateZ(1px); }
+/* creases: spine shading + mid-fold shading, drawn where the hinges are */
+.face::before, .face::after { content: ""; position: absolute; pointer-events: none; z-index: 5; }
+.face::before { top: 0; bottom: 0; width: 46px; }
+.h1 .face.front::before { right: 0; background: linear-gradient(90deg, transparent, rgba(60,40,20,.10) 70%, rgba(60,40,20,.22)); }
+.h2 .face.front::before { left: 0;  background: linear-gradient(270deg, transparent, rgba(60,40,20,.10) 70%, rgba(60,40,20,.22)); }
+.h1 .face.back::before  { left: 0;  background: linear-gradient(270deg, transparent, rgba(60,40,20,.06) 70%, rgba(60,40,20,.14)); }
+.h2 .face.back::before  { right: 0; background: linear-gradient(90deg, transparent, rgba(60,40,20,.06) 70%, rgba(60,40,20,.14)); }
+.face::after { left: 0; right: 0; height: 22px; }
+.quad.top .face::after    { bottom: 0; background: linear-gradient(0deg, rgba(60,40,20,.13), transparent); }
+.quad.bottom .face::after { top: 0;    background: linear-gradient(180deg, rgba(60,40,20,.13), transparent); }
+
+/* Each page is rendered in full and clipped by its quadrant */
+.page { position: absolute; left: 0; width: var(--pw); height: var(--ph); }
+.page[data-part="top"] { top: 0; }
+.page[data-part="bottom"] { top: calc(var(--qh) * -1); }
+
+/* ---- Newsprint typography ------------------------------------------------ */
+.p { position: absolute; inset: 0; padding: 14px 16px 16px; font-family: var(--serif); color: var(--ink); overflow: hidden; }
+.p .empty { display: none; }
+.body { font-size: 9.4px; line-height: 1.32; text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.body p { margin: 0 0 .55em; text-indent: 1em; orphans: 2; widows: 2; }
+.body p:first-child { text-indent: 0; }
+.body p.drop::first-letter { float: left; font-family: var(--display); font-weight: 900; font-size: 30px; line-height: .78; padding: 3px 3px 0 0; }
+.body.small { font-size: 8.6px; }
+.cols { column-gap: 10px; column-rule: 1px solid #c9c1ae; column-fill: balance; }
+.cols-3 { column-count: 3; }
+.cols-2 { column-count: 2; }
+.rule { border: 0; border-top: 1px solid var(--ink); margin: 7px 0 6px; position: relative; }
+.rule::after { content: ""; position: absolute; left: 0; right: 0; top: 2px; border-top: 1px solid var(--ink); }
+
+/* front page */
+.ears { display: flex; justify-content: space-between; font-size: 7.6px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
+.ear { border: 1px solid var(--rule); padding: 2px 5px; }
+.masthead {
+  font-family: var(--black); font-weight: 700; font-size: 38px; line-height: 1; text-align: center;
+  margin: 4px 0 6px; letter-spacing: 0; white-space: nowrap;
+}
+.dateline {
+  display: flex; justify-content: space-between; border-top: 1px solid var(--ink); border-bottom: 3px double var(--ink);
+  font-size: 7.6px; text-transform: uppercase; letter-spacing: .12em; padding: 3px 2px; margin-bottom: 8px;
+}
+.dateline span:empty { display: inline-block; min-width: 1px; }
+.banner { font-family: var(--display); font-weight: 900; font-size: 27px; line-height: 1.02; text-align: center; margin: 0 0 5px; letter-spacing: -.01em; }
+.kicker { font-style: italic; text-align: center; font-size: 10px; margin: 0 0 8px; color: var(--ink-soft); }
+.front-page .cols-3 { height: 218px; overflow: hidden; }
+.lower { display: flex; gap: 10px; }
+.lower .photo { flex: 0 0 150px; }
+.lower-text { flex: 1; min-width: 0; }
+.sub { font-family: var(--display); font-weight: 700; font-size: 14px; line-height: 1.1; margin: 0 0 4px; }
+.note { font-size: 8.6px; font-style: italic; border-top: 1px solid var(--rule); padding-top: 3px; margin: 4px 0 0; }
+.body.single { max-height: 96px; overflow: hidden; }
+
+/* photos: newsprint effect is CSS-only so remote images need no CORS */
+.photo { margin: 0; break-inside: avoid; }
+.photo.empty { display: none; }
+.photo .img { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #999 center / cover no-repeat; overflow: hidden; }
+.photo.newsprint .img { filter: grayscale(1) contrast(1.3) brightness(1.04) sepia(.28); }
+.photo.newsprint .img::after {
+  content: ""; position: absolute; inset: -60%;
+  background: radial-gradient(circle at center, rgba(20,15,10,.62) .65px, transparent 1.15px) 0 0 / 3px 3px;
+  transform: rotate(18deg); mix-blend-mode: multiply; opacity: .9;
+}
+.photo figcaption { font-size: 7.8px; font-style: italic; margin-top: 3px; line-height: 1.25; color: var(--ink-soft); }
+.photo figcaption:empty { display: none; }
+
+/* inside pages */
+.folio { display: flex; justify-content: space-between; font-size: 7.4px; text-transform: uppercase; letter-spacing: .14em; border-bottom: 1px solid var(--ink); padding-bottom: 3px; margin-bottom: 8px; }
+.section { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 1.05; margin: 0 0 6px; text-align: center; }
+.section::after { content: ""; display: block; width: 46px; border-top: 1px solid var(--ink); margin: 5px auto 0; }
+.inside-left .cols-2 { max-height: 210px; overflow: hidden; }
+.review { display: flex; gap: 10px; }
+.review .photo { flex: 0 0 140px; }
+.review .body { flex: 1; max-height: 150px; }
+.boxes { display: flex; gap: 8px; margin-bottom: 8px; }
+.box { flex: 1; border: 1px solid var(--ink); padding: 5px 7px 6px; }
+.box h4, .classified-head { font-family: var(--display); font-size: 9.5px; text-transform: uppercase; letter-spacing: .14em; margin: 0 0 3px; text-align: center; }
+.box .body { max-height: 72px; overflow: hidden; }
+.classified-head { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 2px 0; margin: 0 0 5px; }
+.classifieds { columns: 2; column-gap: 10px; font-size: 8.4px; line-height: 1.3; }
+.classifieds p { margin: 0 0 4px; break-inside: avoid; }
+.classifieds p::first-letter, .classifieds p { font-variant-caps: normal; }
+.back-page .colophon { position: absolute; left: 16px; right: 16px; bottom: 16px; text-align: center; }
+.mono { font-family: var(--mono); font-size: 8px; letter-spacing: .02em; color: var(--ink-soft); }
+
+/* ---- Highlight of the week (three.js layer) --------------------------------- */
+.drop-layer { position: absolute; inset: 0; pointer-events: none; transform: translateZ(6px); }
+.drop-layer canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.object-caption {
+  position: absolute; left: calc(50% + var(--pw) * .55); top: calc(50% + var(--ph) * .42);
+  transform: translateZ(8px); font: 11px/1.4 var(--mono); color: #d9d2c4;
+  max-width: 220px; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+.object-caption::before { content: "↳ "; opacity: .6; }
+/* PNG fallback: CSS version of the tumble keyframes */
+.drop-fallback {
+  position: absolute; left: var(--x, 78%); top: var(--y, 70%); width: 120px; height: 120px; object-fit: contain;
+  transform: translate(-50%, -50%) scale(var(--scale, 1)); filter: drop-shadow(0 8px 10px rgba(0,0,0,.45));
+}
+.drop-fallback.in.tumble, .drop-fallback.in.roll, .drop-fallback.in.flutter { animation: css-tumble 1.4s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes css-tumble {
+  0%   { left: 50%; top: 45%; transform: translate(-50%,-50%) scale(calc(var(--scale,1) * 1.25)) rotate(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  70%  { top: calc(var(--y, 70%) + 0.5%); transform: translate(-50%,-50%) scale(var(--scale,1)) rotate(500deg); }
+  84%  { top: calc(var(--y, 70%) - 3%); }
+  93%  { top: var(--y, 70%); transform: translate(-50%,-50%) scale(var(--scale,1)) rotate(536deg); }
+  100% { left: var(--x, 78%); top: var(--y, 70%); transform: translate(-50%,-50%) scale(var(--scale,1)) rotate(540deg); }
+}
+/* splat: flat decal under the paper edge */
+.splat {
+  position: absolute; left: var(--x, 70%); top: var(--y, 70%); width: 200px; height: 160px; pointer-events: none;
+  transform: translate(-50%, -50%) translateZ(1px) scale(.4); opacity: 0; transition: transform 600ms cubic-bezier(.2,.8,.2,1), opacity 600ms ease;
+  background:
+    radial-gradient(ellipse 44% 38% at 48% 52%, rgba(62,34,10,.78) 40%, rgba(62,34,10,.55) 75%, transparent 78%),
+    radial-gradient(ellipse 36% 30% at 48% 52%, transparent 88%, rgba(40,20,5,.35) 92%, transparent 100%),
+    radial-gradient(circle 11px at 13% 32%, rgba(62,34,10,.7), transparent 72%),
+    radial-gradient(circle 8px at 88% 64%, rgba(62,34,10,.7), transparent 72%),
+    radial-gradient(circle 6px at 72% 10%, rgba(62,34,10,.7), transparent 72%),
+    radial-gradient(circle 5px at 30% 90%, rgba(62,34,10,.7), transparent 72%);
+  filter: blur(.5px);
+}
+.splat.in { opacity: 1; transform: translate(-50%, -50%) translateZ(1px) scale(1) rotate(-8deg); }
+
+/* ---- Hint / nav ------------------------------------------------------------- */
+.hint {
+  position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 22px; font: 12px/1 var(--mono); color: #bfb6a5; z-index: 2;
+  letter-spacing: .04em;
+}
+.hint-text { opacity: .85; animation: blink 3.2s ease-in-out infinite; }
+@keyframes blink { 0%, 100% { opacity: .85; } 50% { opacity: .4; } }
+.nav { background: none; border: 0; color: #bfb6a5; font: inherit; cursor: pointer; padding: 6px 4px; opacity: .8; }
+.nav:hover { opacity: 1; text-decoration: underline; }
+.nav:disabled { opacity: .25; cursor: default; text-decoration: none; }
+.status { position: absolute; left: 16px; bottom: 12px; font: 10px/1.4 var(--mono); color: #8c847a; z-index: 2; max-width: 40vw; }
+
+/* ---- Small screens: scale the paper to ~85vw, no tilt (JS), tap to unfold ---- */
+@media (max-width: 720px) {
+  :root { --scale: calc(85vw / 400px); }
+  body[data-stage="2"] { --scale: calc(92vw / 800px); }
+  .paper, .paper-shadow { transition-property: transform, width, height; }
+  .object-caption { left: 50%; top: calc(50% + 46vw); transform: translateX(-50%) translateZ(8px); text-align: center; }
+  .hint { bottom: 14px; gap: 14px; font-size: 11px; }
+}
+@media (pr

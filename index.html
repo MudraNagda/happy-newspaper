@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Happy Newspaper</title>
+<meta name="description" content="A weekly folded newspaper, filled in from a Google Form. Click to unfold.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23f3ecdc'/%3E%3Crect x='6' y='7' width='20' height='3' fill='%231b1a17'/%3E%3Crect x='6' y='13' width='9' height='12' fill='%231b1a17'/%3E%3Crect x='17' y='13' width='9' height='2' fill='%231b1a17'/%3E%3Crect x='17' y='17' width='9' height='2' fill='%231b1a17'/%3E%3Crect x='17' y='21' width='9' height='2' fill='%231b1a17'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/paper.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<main class="desk" id="desk">
+  <div class="tilt" id="tilt">
+    <div class="paper-shadow" id="paperShadow"></div>
+
+    <!-- The sheet: h1 = left half (front page outside / inside-left inside), h2 = right half. -->
+    <div class="paper stage-0" id="paper" aria-label="Folded newspaper. Click to unfold.">
+      <div class="half h2">
+        <div class="quad top">
+          <div class="face front"><div class="page page-inside-right" data-page="inside-right" data-part="top"></div></div>
+          <div class="face back"><div class="page page-back" data-page="back" data-part="top"></div></div>
+        </div>
+        <div class="quad bottom">
+          <div class="face front"><div class="page page-inside-right" data-page="inside-right" data-part="bottom"></div></div>
+          <div class="face back"><div class="page page-back" data-page="back" data-part="bottom"></div></div>
+        </div>
+      </div>
+      <div class="half h1">
+        <div class="quad top">
+          <div class="face front"><div class="page page-inside-left" data-page="inside-left" data-part="top"></div></div>
+          <div class="face back"><div class="page page-front" data-page="front" data-part="top"></div></div>
+        </div>
+        <div class="quad bottom">
+          <div class="face front"><div class="page page-inside-left" data-page="inside-left" data-part="bottom"></div></div>
+          <div class="face back"><div class="page page-front" data-page="front" data-part="bottom"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlight of the week: three.js canvas shares the desk tilt with the paper -->
+    <div class="drop-layer" id="dropLayer">
+      <canvas id="dropCanvas"></canvas>
+      <img id="dropFallback" class="drop-fallback" alt="" hidden>
+      <div class="splat" id="splat" hidden></div>
+    </div>
+    <div class="object-caption" id="objectCaption" hidden></div>
+  </div>
+
+  <div class="hint" id="hint">
+    <button class="nav" id="olderBtn" title="Older issue" aria-label="Older issue">&larr; older</button>
+    <span class="hint-text" id="hintText">click to unfold</span>
+    <button class="nav" id="newerBtn" title="Newer issue" aria-label="Newer issue">newer &rarr;</button>
+  </div>
+  <div class="status" id="status" aria-live="polite"></div>
+</main>
+
+<!-- Page templates. Each is rendered once per quadrant and clipped, so the fold can cut through the layout. -->
+<template id="tpl-front">
+  <div class="p front-page">
+    <div class="ears"><span class="ear" data-f="earLeft"></span><span class="ear" data-f="earRight"></span></div>
+    <h1 class="masthead" data-f="masthead"></h1>
+    <div class="dateline"><span data-f="issueNo"></span><span data-f="date"></span><span data-f="price"></span></div>
+    <h2 class="banner" data-f="mainHeadline"></h2>
+    <p class="kicker" data-f="mainKicker"></p>
+    <div class="cols cols-3 body" data-f="mainStory"></div>
+    <hr class="rule">
+    <div class="lower">
+      <figure class="photo" data-f="secondImage"><div class="img"></div><figcaption data-f="secondCaption"></figcaption></figure>
+      <div class="lower-text">
+        <h3 class="sub" data-f="secondHeadline"></h3>
+        <div class="body single" data-f="secondStory"></div>
+        <p class="note" data-f="secondNote"></p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-inside-left">
+  <div class="p inside-left">
+    <div class="folio"><span data-f="masthead"></span><span data-f="date"></span><span>Page 2</span></div>
+    <h3 class="section" data-f="lettersHeadline"></h3>
+    <div class="cols cols-2 body" data-f="letters"></div>
+    <hr class="rule">
+    <h3 class="section">The Week in the Courts</h3>
+    <div class="cols cols-2 body" data-f="courts"></div>
+  </div>
+</template>
+
+<template id="tpl-inside-right">
+  <div class="p inside-right">
+    <div class="folio"><span>Page 3</span><span data-f="date"></span><span>Arts &amp; Weather</span></div>
+    <h3 class="section" data-f="artsHeadline"></h3>
+    <div class="review">
+      <figure class="photo" data-f="artsImage"><div class="img"></div><figcaption data-f="artsCaption"></figcaption></figure>
+      <div class="body single" data-f="arts"></div>
+    </div>
+    <hr class="rule">
+    <div class="boxes">
+      <div class="box"><h4>Weather</h4><div class="body small" data-f="weather"></div></div>
+      <div class="box"><h4>Shipping</h4><div class="body small" data-f="shipping"></div></div>
+    </div>
+    <h4 class="classified-head">Classifieds</h4>
+    <div class="classifieds" data-f="classifieds"></div>
+  </div>
+</template>
+
+<template id="tpl-back">
+  <div class="p back-page">
+    <div class="folio"><span>Page 4</span><span data-f="date"></span><span data-f="masthead"></span></div>
+    <div class="colophon">
+      <p class="mono">Printed weekly. Set from a Google Sheet, folded in CSS.</p>
+      <p class="mono" data-f="objectLine"></p>
+    </div>
+  </div>
+</template>
+
+<script src="js/config.js"></script>
+<script src="js/sample-issue.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
