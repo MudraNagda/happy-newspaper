@@ -19,12 +19,12 @@ window.PAPER_CONFIG = {
   // Apply the newsprint effect (grayscale + contrast + sepia + halftone) to feed images.
   newsprintImages: true,
 
-  // Fold choreography (ms). openSpeed = spine swing (stage 1 → 2); the object spawns at 40% of it.
-  unfoldSpeed: 900,
-  openSpeed: 1100,
+  // Fold choreography (seconds) — see ANIMATION-SPEC.md. openSpeed drives every timing; tiltAmount is degrees.
+  openSpeed: 0.95,
+  tiltAmount: 12,
 
   // Object shown when a week has no "Object URL". Set to null for nothing to fall out.
-  defaultObject: null, // e.g. { url: "objects/2026-09-01.glb", caption: "the usual mug", drop: "tumble", scale: 1 }
+  defaultObject: null, // e.g. { url: "2026-09-01.glb", caption: "the usual mug", scale: 1 }
 
   // Base directory for relative object URLs written in the sheet (e.g. "2026-09-01.glb").
   objectsDir: "objects/",

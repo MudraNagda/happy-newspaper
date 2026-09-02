@@ -35,7 +35,7 @@ In a separate hearing, a z-index was found to have no jurisdiction over elements
   artsCaption: "This week's object, seen from the handle side.",
   arts: `This week's object is a mug. It is yellow, it has a handle, and there is what appears to be coffee in it, though the coffee does not move and cannot be drunk.
 
-It falls out of the paper with a confidence that suggests it has done this before. Two bounces, a small settle, and it is still. Four stars.`,
+It drops out of the spine with a confidence that suggests it has done this before, then declines to land, preferring to hover a little above the desk. Four stars.`,
   weather: `Bright, with a chance of good news. Light winds from the direction of the spreadsheet. Sunset whenever you close the tab.`,
   shipping: `Sheet to paper: calm, ten-minute cache. Drive links: converted on arrival. Images without CORS: proceeding under CSS filter.`,
   classifieds: `WANTED: A second object, for the second week. Must be under 1 MB.
@@ -45,5 +45,4 @@ FOUND: The bottom of the page. Please collect.`,
   objectUrl: "2026-09-01.glb",
   objectCaption: "this week: a mug, printed",
   objectScale: 1,
-  objectDrop: "tumble",
 }];

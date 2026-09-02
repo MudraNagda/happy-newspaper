@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/paper.css">
+<link rel="stylesheet" href="css/edges.css">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
@@ -19,41 +20,62 @@
 </head>
 <body>
 <main class="desk" id="desk">
+ <div class="fit" id="fit">
+  <!-- tilt wrapper: translateX(shiftX) translateY(lift) rotateX rotateY, .55s -->
   <div class="tilt" id="tilt">
-    <div class="paper-shadow" id="paperShadow"></div>
+   <!-- floaty wrapper: idle bob -->
+   <div class="floaty">
+    <div class="paper stage-0" id="paper" data-dir="open" aria-label="Folded newspaper. Click to unfold." tabindex="0">
 
-    <!-- The sheet: h1 = left half (front page outside / inside-left inside), h2 = right half. -->
-    <div class="paper stage-0" id="paper" aria-label="Folded newspaper. Click to unfold.">
-      <div class="half h2">
-        <div class="quad top">
-          <div class="face front"><div class="page page-inside-right" data-page="inside-right" data-part="top"></div></div>
-          <div class="face back"><div class="page page-back" data-page="back" data-part="top"></div></div>
+      <!-- ground shadows (crossfade) -->
+      <div class="shadow shadow-folded"></div>
+      <div class="shadow shadow-open"></div>
+      <!-- under-sheets: thickness, stage 0 only -->
+      <div class="under under-1"></div>
+      <div class="under under-2"></div>
+
+      <!-- REAR sheet: inside-right on its front face, back page behind -->
+      <div class="sheet rear">
+        <div class="half top">
+          <div class="face front"><div class="page" data-page="inside-right" data-part="top"></div><div class="spine-valley"></div><div class="crease crease-top"></div></div>
+          <div class="face back"><div class="page" data-page="back" data-part="top"></div></div>
         </div>
-        <div class="quad bottom">
-          <div class="face front"><div class="page page-inside-right" data-page="inside-right" data-part="bottom"></div></div>
-          <div class="face back"><div class="page page-back" data-page="back" data-part="bottom"></div></div>
+        <div class="hinge fold rear-fold">
+          <div class="flop fold-flop">
+            <div class="half bottom">
+              <div class="face front"><div class="page" data-page="inside-right" data-part="bottom"></div><div class="spine-valley"></div><div class="crease crease-bottom"></div></div>
+              <div class="face back"><div class="page" data-page="back" data-part="bottom"></div></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="half h1">
-        <div class="quad top">
-          <div class="face front"><div class="page page-inside-left" data-page="inside-left" data-part="top"></div></div>
-          <div class="face back"><div class="page page-front" data-page="front" data-part="top"></div></div>
-        </div>
-        <div class="quad bottom">
-          <div class="face front"><div class="page page-inside-left" data-page="inside-left" data-part="bottom"></div></div>
-          <div class="face back"><div class="page page-front" data-page="front" data-part="bottom"></div></div>
+
+      <!-- FRONT sheet: front page on its front face, inside-left behind; swings open on the left spine -->
+      <div class="hinge spread">
+        <div class="flop spread-flop">
+          <div class="sheet front-sheet">
+            <div class="half top">
+              <div class="face front"><div class="page" data-page="front" data-part="top"></div><div class="crease crease-top"></div></div>
+              <div class="face back"><div class="page" data-page="inside-left" data-part="top"></div><div class="spine-valley"></div><div class="crease crease-top"></div></div>
+            </div>
+            <div class="hinge fold front-fold">
+              <div class="flop fold-flop">
+                <div class="half bottom">
+                  <div class="face front"><div class="page" data-page="front" data-part="bottom"></div><div class="crease crease-bottom"></div><div class="corner-shade"></div></div>
+                  <div class="face back"><div class="page" data-page="inside-left" data-part="bottom"></div><div class="spine-valley"></div><div class="crease crease-bottom"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Highlight of the week: three.js canvas shares the desk tilt with the paper -->
-    <div class="drop-layer" id="dropLayer">
-      <canvas id="dropCanvas"></canvas>
-      <img id="dropFallback" class="drop-fallback" alt="" hidden>
-      <div class="splat" id="splat" hidden></div>
+      <!-- weekly object mounts here at stage 2 (own layer, translateZ(60px)) -->
+      <div class="object-slot" id="objectSlot"></div>
     </div>
-    <div class="object-caption" id="objectCaption" hidden></div>
+   </div>
   </div>
+ </div>
 
   <div class="hint" id="hint">
     <button class="nav" id="olderBtn" title="Older issue" aria-label="Older issue">&larr; older</button>
@@ -63,7 +85,7 @@
   <div class="status" id="status" aria-live="polite"></div>
 </main>
 
-<!-- Page templates. Each is rendered once per quadrant and clipped, so the fold can cut through the layout. -->
+<!-- Page templates. Each is rendered once per half and clipped, so the fold cuts through the layout. -->
 <template id="tpl-front">
   <div class="p front-page">
     <div class="ears"><span class="ear" data-f="earLeft"></span><span class="ear" data-f="earRight"></span></div>
@@ -83,7 +105,6 @@
     </div>
   </div>
 </template>
-
 <template id="tpl-inside-left">
   <div class="p inside-left">
     <div class="folio"><span data-f="masthead"></span><span data-f="date"></span><span>Page 2</span></div>
@@ -94,7 +115,6 @@
     <div class="cols cols-2 body" data-f="courts"></div>
   </div>
 </template>
-
 <template id="tpl-inside-right">
   <div class="p inside-right">
     <div class="folio"><span>Page 3</span><span data-f="date"></span><span>Arts &amp; Weather</span></div>
@@ -112,7 +132,6 @@
     <div class="classifieds" data-f="classifieds"></div>
   </div>
 </template>
-
 <template id="tpl-back">
   <div class="p back-page">
     <div class="folio"><span>Page 4</span><span data-f="date"></span><span data-f="masthead"></span></div>

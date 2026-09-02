@@ -48,7 +48,6 @@ function createHappyNewspaperForm() {
   text('Object URL', 'A .glb — either a filename in the site\'s objects/ folder (e.g. 2026-09-01.glb) or a public/Drive link.');
   text('Object caption', 'Shown next to the object once it lands, e.g. "this week: a rose I printed"');
   text('Object scale', 'Number, default 1');
-  form.addListItem().setTitle('Object drop').setChoiceValues(['tumble', 'roll', 'flutter', 'splat']).setHelpText('Physics preset. Default tumble.');
   text('Object PNG', 'Optional .png fallback for browsers without WebGL');
 
   const ss = SpreadsheetApp.create('The Happy Newspaper — issues');

@@ -26,7 +26,6 @@ const FIELD_KEYS = [
   ['objectUrl',      ['object', 'url']],
   ['objectCaption',  ['object', 'caption']],
   ['objectScale',    ['object', 'scale']],
-  ['objectDrop',     ['object', 'drop']],
   ['objectFallback', ['object', 'png']],
   ['objectFallback', ['object', 'fallback']],
   ['objectUrl',      ['object']],
@@ -88,7 +87,6 @@ export function rowsToIssues({ cols, rows }, cfg) {
     if (issue.objectUrl) issue.objectUrl = normalizeUrl(issue.objectUrl, cfg.objectsDir);
     if (issue.objectFallback) issue.objectFallback = normalizeUrl(issue.objectFallback, cfg.objectsDir);
     issue.objectScale = parseFloat(issue.objectScale) || 1;
-    issue.objectDrop = (issue.objectDrop || 'tumble').toLowerCase().trim();
     issue._sort = Date.parse(issue.date) || Date.parse(issue.timestamp) || 0;
     issues.push(issue);
   }
