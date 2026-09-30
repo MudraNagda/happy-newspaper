@@ -26,6 +26,11 @@ window.PAPER_CONFIG = {
   // Object shown when a week has no "Object URL". Set to null for nothing to fall out.
   defaultObject: null, // e.g. { url: "2026-09-01.glb", caption: "the usual mug", scale: 1 }
 
+  // Origami gallery (optional). Run createOrigamiGalleryForm in setup/create-form.gs and paste the two URLs it logs.
+  // Left empty, the gallery shows sample pieces plus the visitor's own (saved in their browser only).
+  galleryPrefillUrl: "",
+  gallerySheetUrl: "",
+
   // Base directory for relative object URLs written in the sheet (e.g. "2026-09-01.glb").
   objectsDir: "objects/",
 };

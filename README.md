@@ -72,6 +72,14 @@ The mouse tilts the whole desk (12° at stage 0, damped to 60 % and 35 % at stag
 
 A `.glb` is rendered once by three.js into a small image (so no WebGL context stays alive); a `.png`/`.jpg` URL is used directly. If the `.glb` fails, `Object PNG` is used. No object URL → nothing mounts that week.
 
+## The tear-away origami
+
+[`js/origami.js`](js/origami.js). On the open spread, the whole bottom-right quadrant (page 3) glows: "tear away, fold your surprise". Clicking anywhere on it tears the entire quadrant off, the rest of the paper drops out of frame, and each click folds it one step: first the spare strip folds over to make a square, then the square becomes a random model (paper plane, tulip, swan or puppy; a different one each visit, with its crease lines printed on the quadrant). When the last fold lands, the piece centres and glows, and pieces folded by other readers fade in around it.
+
+The folds are real: a small flat-fold engine splits the paper's faces along each fold line and re-stacks them, so new models are just a list of lines in `MODELS`.
+
+**Shared gallery (optional).** Run `createOrigamiGalleryForm` in [`setup/create-form.gs`](setup/create-form.gs), paste the two URLs it logs into `galleryPrefillUrl` and `gallerySheetUrl` in `js/config.js`, and share that Sheet as Viewer. Each finished fold then posts its model and colour to the Form, and the gallery reads the Sheet. Until that is set, the gallery shows sample pieces plus the visitor's own, saved only in their browser.
+
 ## Files
 
 ```
@@ -82,6 +90,7 @@ js/config.js          sheetUrl, masthead, timings, default object
 js/sheet.js           gviz fetch, header→field matching, Drive URL conversion, cache
 js/render.js          issue → four pages (each rendered twice, clipped per quadrant)
 js/fold.js            stage machine, two-beat close, moving flag, desk tilt
+js/origami.js         tear-away origami: fold engine, models, gallery
 js/object.js          weekly object (CSS drop/float, three.js .glb render)
 js/sample-issue.js    fallback content
 objects/              .glb files (one per week)

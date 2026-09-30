@@ -13,7 +13,7 @@ export class Fold {
   }
 
   next() {
-    if (this.locked) return;
+    if (this.locked || this.disabled) return;
     if (this.stage === 2) this.closeSequence(); else this.beat(this.stage + 1);
   }
 

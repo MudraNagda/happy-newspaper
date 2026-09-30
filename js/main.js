@@ -2,6 +2,7 @@ import { loadIssues, normalizeUrl } from './sheet.js';
 import { renderIssue } from './render.js';
 import { Fold } from './fold.js';
 import { WeeklyObject } from './object.js';
+import { Origami } from './origami.js';
 
 const cfg = window.PAPER_CONFIG;
 const $ = (id) => document.getElementById(id);
@@ -25,7 +26,8 @@ fold.tiltEnabled = !isMobile;
 fold.attachTilt(desk);
 $('hintText').textContent = isMobile ? 'tap to unfold' : 'click to unfold';
 document.body.dataset.stage = 0;
-window.__paper = { fold, weekly, show: (i) => show(i), get issues() { return issues; } }; // handy in devtools
+const origami = new Origami({ cfg, fold, fit: $('fit'), panel: $('tearaway'), guides: $('tearGuides'), root: $('origami') });
+window.__paper = { fold, weekly, origami, show: (i) => show(i), get issues() { return issues; } }; // handy in devtools
 
 function show(i) {
   index = Math.max(0, Math.min(issues.length - 1, i));

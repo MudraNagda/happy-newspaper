@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/paper.css">
 <link rel="stylesheet" href="css/edges.css">
+<link rel="stylesheet" href="css/origami.css">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
@@ -43,7 +44,11 @@
         <div class="hinge fold rear-fold">
           <div class="flop fold-flop">
             <div class="half bottom">
-              <div class="face front"><div class="page" data-page="inside-right" data-part="bottom"></div><div class="spine-valley"></div><div class="crease crease-bottom"></div></div>
+              <div class="face front"><div class="page" data-page="inside-right" data-part="bottom"></div>
+                <div class="tearaway" id="tearaway" role="button" aria-label="Tear away and fold your surprise">
+                  <svg viewBox="-0.5 -0.5 1.4828 1" id="tearGuides" aria-hidden="true"></svg>
+                  <span class="tear-label">&#9986; tear away<b>fold your surprise</b></span>
+                </div><div class="spine-valley"></div><div class="crease crease-bottom"></div></div>
               <div class="face back"><div class="page" data-page="back" data-part="bottom"></div></div>
             </div>
           </div>
@@ -84,6 +89,15 @@
   </div>
   <div class="status" id="status" aria-live="polite"></div>
 </main>
+
+<!-- origami stage: the torn square, folded click by click -->
+<div class="origami" id="origami" hidden>
+  <div class="ori-gallery"></div>
+  <div class="ori-step" aria-live="polite"></div>
+  <svg class="ori-paper" viewBox="-1 -1 2 2"></svg>
+  <div class="ori-hint"></div>
+  <div class="ori-actions" hidden><button class="ori-again">fold another</button><button class="ori-back">back to the paper</button></div>
+</div>
 
 <!-- Page templates. Each is rendered once per half and clipped, so the fold cuts through the layout. -->
 <template id="tpl-front">

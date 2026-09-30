@@ -58,3 +58,19 @@ function createHappyNewspaperForm() {
   Logger.log('SHEET (paste in config): ' + ss.getUrl());
   Logger.log('Now: Share the Sheet → Anyone with the link → Viewer.');
 }
+
+/**
+ * Optional: shared origami gallery. Every finished fold posts {model, color} here; the site reads the Sheet back.
+ * Run once, then paste the two logged URLs into js/config.js (galleryPrefillUrl, gallerySheetUrl)
+ * and share the Sheet as "Anyone with the link → Viewer".
+ */
+function createOrigamiGalleryForm() {
+  const form = FormApp.create('The Happy Newspaper — origami gallery');
+  const model = form.addTextItem().setTitle('Model');
+  const color = form.addTextItem().setTitle('Color');
+  const ss = SpreadsheetApp.create('The Happy Newspaper — origami gallery');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  const prefill = form.createResponse().withItemResponse(model.createResponse('MODEL')).withItemResponse(color.createResponse('COLOR')).toPrefilledUrl();
+  Logger.log('galleryPrefillUrl: ' + prefill);
+  Logger.log('gallerySheetUrl:   ' + ss.getUrl());
+}

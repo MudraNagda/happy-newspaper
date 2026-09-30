@@ -1,0 +1,41 @@
+/* ---- Tear-away panel on page 3 (rear sheet, bottom half) --------------------------------------- */
+.tearaway { position: absolute; inset: 0; z-index: 3; cursor: pointer; pointer-events: none;
+  border-top: 1.5px dashed rgba(27, 26, 23, .7); border-left: 1.5px dashed rgba(27, 26, 23, .7); background: rgba(255, 250, 235, .35); }
+.tearaway svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.tearaway svg line { stroke: rgba(27, 26, 23, .45); stroke-width: .006; stroke-dasharray: .025 .02; }
+.tear-label { position: absolute; left: 145px; top: 145px; transform: translate(-50%, -50%); white-space: nowrap; font: 9px/1.35 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: var(--paper); padding: 4px 8px; text-align: center; border: 1px solid var(--rule); }
+.tear-label b { display: block; font-weight: 400; font-style: italic; text-transform: none; letter-spacing: 0; font-family: var(--serif); font-size: 11px; }
+.paper.stage-2 .tearaway { pointer-events: auto; animation: tearGlow 1.8s ease-in-out .9s infinite; }
+@keyframes tearGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 176, 60, 0), inset 0 0 0 0 rgba(255, 176, 60, 0); } 50% { box-shadow: inset 0 0 0 3px rgba(255, 176, 60, .9), inset 0 0 36px 6px rgba(255, 186, 80, .6); } }
+.half.torn-off { visibility: hidden; }
+.half.torn-off .tearaway { animation: none !important; }
+
+/* the rest of the paper drops out of frame */
+.fit.dropped { transform: translateY(135vh) rotateZ(7deg) scale(calc(var(--scale) * .8)); transition: transform .9s cubic-bezier(.5, 0, .9, .4); }
+.fit { transition: transform .9s cubic-bezier(.2, .8, .2, 1); }
+body[data-origami] .hint { opacity: 0; pointer-events: none; }
+
+/* ---- Origami stage -------------------------------------------------------------------------------- */
+.origami { position: fixed; inset: 0; z-index: 5; cursor: pointer; font-family: var(--mono); color: #d9d2c4; user-select: none; -webkit-user-select: none; }
+.origami[hidden] { display: none; }
+.origami.finished { cursor: default; }
+.ori-paper { position: absolute; left: 50%; top: 50%; overflow: visible; transition: transform .9s cubic-bezier(.2, .8, .2, 1), filter .8s ease;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .5)); }
+.ori-paper.done { animation: oriGlow 2.6s ease-in-out infinite; }
+@keyframes oriGlow { 0%, 100% { filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .5)) drop-shadow(0 0 10px rgba(255, 196, 90, .55)); } 50% { filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .5)) drop-shadow(0 0 34px rgba(255, 196, 90, .95)); } }
+.ori-guide { fill: none; stroke: #ffb03c; stroke-width: .012; stroke-dasharray: .035 .028; stroke-linecap: round; filter: drop-shadow(0 0 .02px #ffb03c); animation: oriDash 1s linear infinite; }
+@keyframes oriDash { to { stroke-dashoffset: -.063; } }
+.ori-deco { animation: oriFade .6s ease both; }
+@keyframes oriFade { from { opacity: 0; } }
+.ori-step { position: absolute; left: 0; right: 0; top: 7vh; text-align: center; font: italic 22px/1.3 var(--display); color: #efe6d2; padding: 0 16px; text-shadow: 0 2px 8px rgba(0, 0, 0, .6); }
+.ori-hint { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; font-size: 12px; letter-spacing: .04em; color: #bfb6a5; }
+.ori-actions { position: absolute; left: 0; right: 0; bottom: 22px; display: flex; justify-content: center; gap: 22px; animation: oriFade .6s ease both; }
+.ori-actions[hidden] { display: none; }
+.ori-actions button { background: none; border: 1px solid rgba(217, 210, 196, .4); color: #d9d2c4; font: 12px/1 var(--mono); padding: 8px 12px; cursor: pointer; }
+.ori-actions button:hover { border-color: #ffb03c; color: #ffb03c; }
+.ori-gallery { position: absolute; inset: 0; pointer-events: none; }
+.ori-mini { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; opacity: 0; transform: scale(.7) rotate(var(--r)); transition: opacity .9s ease var(--d), transform .9s cubic-bezier(.2, .8, .2, 1) var(--d); filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .45)); }
+.ori-gallery.in .ori-mini { opacity: .92; transform: scale(1) rotate(var(--r)); }
+.ori-mini svg { width: 100%; height: 100%; overflow: visible; animation: oriBob var(--f) ease-in-out infinite; }
+@keyframes oriBob { 50% { translate: 0 -6px; } }
+@media (max-width: 720px) { .ori-mini { width: 54px; height: 54px; margin: -27px 0 0 -27px; } .ori-step { font-size: 18px; } }
